@@ -56,7 +56,7 @@ void initializeClassRooms(){
 }
 
 //Reserve a classroom so another instance can't reserve it right away
-void reserveClassRoom( char *classRoom ) {
+void reserveClassRoom( char *classRoom,FILE *fp ) {
     pthread_mutex_lock( &monitorLock );
     
     // make sure the item we need is available.
@@ -67,14 +67,11 @@ void reserveClassRoom( char *classRoom ) {
             if ( strcmp( classRoom, lockList[ i ] ) == 0 )
                 available = false;
         
-        if ( !available )
+        if ( !available ){
             pthread_cond_wait( &unlockCond, &monitorLock );
+        }
     }
     
-    if ( lockCount >= maximumAvailableClassRoom ) {
-        maximumAvailableClassRoom *= 2;
-        lockList = realloc( lockList, maximumAvailableClassRoom * sizeof( classRoom ) );
-    }
     strcpy( lockList[ lockCount++ ], classRoom );
     
     pthread_mutex_unlock( &monitorLock );
@@ -82,30 +79,26 @@ void reserveClassRoom( char *classRoom ) {
 
 
 //Release reservation, allow other instances to reserve it
-void vacantClassRoom( char *classRoom ,FILE *fp) {
+void freeClassRoom( char *classRoom ,FILE *fp) {
     pthread_mutex_lock( &monitorLock );
     
-    fprintf(fp, "inside vacant");
     // Find the given name on the lock list.
     for ( int i = 0; i < lockCount; i++ ){
         if ( strcmp( classRoom, lockList[ i ] ) == 0 ) {
             // Unlock it.
-            fprintf(fp, "i:%d lc:%d\n",i,lockCount );
-            strcpy( lockList[ i ], lockList[ --lockCount ] );
+            lockCount--;
+            if(i!=lockCount){
+                strcpy( lockList[ i ], lockList[ lockCount ] );
+            }
+            strcpy( lockList[ lockCount ], "" );
             pthread_cond_broadcast( &unlockCond );
-            //pthread_mutex_unlock( &monitorLock );
-            //return true;
+
         }
     }
     
     pthread_mutex_unlock( &monitorLock );
-    //return false;
-}
 
-void deleteClassRoomFromList(int index){
-    
 }
-
 
 
 //Print out the classrooms that are not reserved
@@ -116,13 +109,11 @@ void printAvailableClassRooms(FILE *fp){
     fprintf(fp,"Class Rooms that are Available:\n");
     for ( int i = 0; i < maximumAvailableClassRoom; i++ ){
         int flag =1;
-        for (int j = 0; j < maximumAvailableClassRoom; j++)
+        for (int j = 0; j < lockCount; j++)
         {
-           //fprintf(fp,"CR: %s\n",classRoomList[ i ] );
-           //fprintf(fp,"LL: %s\n",lockList[ j ] ); 
+
             if(strcmp(classRoomList[i], lockList[j]) == 0){
             flag =0; 
-            //fprintf(fp,"i:%d j:%d\n",i,j );
             break;
            }
         }
@@ -174,28 +165,26 @@ void *handleClient( void *arg ) {
         // Just echo the command back to the client.
         if(strcmp( cmd, "available" ) == 0 ){
             printAvailableClassRooms(fp);
-            //printf("Locks:\n");
-            //listLocks(fp);
+        }
+        else if(strcmp( cmd, "reserved" ) == 0 ){
+            listLocks(fp);
         }
         else if(strcmp( cmd, "book" ) == 0 ){
             ClassRoom classRoom;
             fscanf(fp, "%10s", classRoom);
             if(classRoomExists(classRoom)){
                 //fprintf(fp,"Class Room Available\n");
-                reserveClassRoom( classRoom );
+                reserveClassRoom( classRoom ,fp);
                 fprintf(fp,"Class Room Booked!\n");
 
             }
             else fprintf(fp,"Class Room Doesn't Exist\n");
         }
-        else if(strcmp( cmd, "vacant" ) == 0 ){
+        else if(strcmp( cmd, "free" ) == 0 ){
             ClassRoom classRoom;
             fscanf(fp, "%10s", classRoom);
             if(classRoomExists(classRoom)){
-                fprintf(fp,"Class Room Exists\n");
-                //listLocks(fp);
-                //fprintf(fp, "going inside vacant");
-                vacantClassRoom( classRoom ,fp);
+                freeClassRoom( classRoom ,fp);
             }
             else fprintf(fp,"Class Room Doesn't Exist\n");
         }
