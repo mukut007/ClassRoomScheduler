@@ -21,11 +21,11 @@ typedef char ClassRoom[ CLASS_ROOM_NAME_LENGTH + 1 ];
 // List of all classrooms, as a resizable array.
 static ClassRoom *classRoomList;
 
-// List of all items we've locked, as a resizable array.
-static ClassRoom *lockList;
+// List of all rooms we've reserved, as a resizable array.
+static ClassRoom *reserveList;
 
-// Number of items locked.
-static int lockCount = 0;
+// Number of rooms reserved.
+static int reserveCount = 0;
 
 // Total number of Class rooms available
 static int maximumAvailableClassRoom = 5;
@@ -63,8 +63,8 @@ void reserveClassRoom( char *classRoom,FILE *fp ) {
     bool available = false;
     while ( !available ) {
         available = true;
-        for ( int i = 0; i < lockCount; i++ )
-            if ( strcmp( classRoom, lockList[ i ] ) == 0 )
+        for ( int i = 0; i < reserveCount; i++ )
+            if ( strcmp( classRoom, reserveList[ i ] ) == 0 )
                 available = false;
         
         if ( !available ){
@@ -72,7 +72,7 @@ void reserveClassRoom( char *classRoom,FILE *fp ) {
         }
     }
     
-    strcpy( lockList[ lockCount++ ], classRoom );
+    strcpy( reserveList[ reserveCount++ ], classRoom );
     
     pthread_mutex_unlock( &monitorLock );
 }
@@ -83,14 +83,14 @@ void freeClassRoom( char *classRoom ,FILE *fp) {
     pthread_mutex_lock( &monitorLock );
     
     // Find the given name on the lock list.
-    for ( int i = 0; i < lockCount; i++ ){
-        if ( strcmp( classRoom, lockList[ i ] ) == 0 ) {
+    for ( int i = 0; i < reserveCount; i++ ){
+        if ( strcmp( classRoom, reserveList[ i ] ) == 0 ) {
             // Unlock it.
-            lockCount--;
-            if(i!=lockCount){
-                strcpy( lockList[ i ], lockList[ lockCount ] );
+            reserveCount--;
+            if(i!=reserveCount){
+                strcpy( reserveList[ i ], reserveList[ reserveCount ] );
             }
-            strcpy( lockList[ lockCount ], "" );
+            strcpy( reserveList[ reserveCount ], "" );
             pthread_cond_broadcast( &unlockCond );
 
         }
@@ -109,10 +109,10 @@ void printAvailableClassRooms(FILE *fp){
     fprintf(fp,"Class Rooms that are Available:\n");
     for ( int i = 0; i < maximumAvailableClassRoom; i++ ){
         int flag =1;
-        for (int j = 0; j < lockCount; j++)
+        for (int j = 0; j < reserveCount; j++)
         {
 
-            if(strcmp(classRoomList[i], lockList[j]) == 0){
+            if(strcmp(classRoomList[i], reserveList[j]) == 0){
             flag =0; 
             break;
            }
@@ -130,8 +130,8 @@ void printAvailableClassRooms(FILE *fp){
 void listLocks( FILE *fp ) {
     pthread_mutex_lock( &monitorLock );
     
-    for ( int i = 0; i < lockCount; i++ )
-        fprintf( fp, "%s\n", lockList[ i ] );
+    for ( int i = 0; i < reserveCount; i++ )
+        fprintf( fp, "%s\n", reserveList[ i ] );
     
     pthread_mutex_unlock( &monitorLock );
 }
@@ -162,7 +162,7 @@ void *handleClient( void *arg ) {
     int match;
     while ( ( match = fscanf( fp, "%s", cmd ) ) == 1 &&
            strcmp( cmd, "quit" ) != 0 ) {
-        // Just echo the command back to the client.
+
         if(strcmp( cmd, "available" ) == 0 ){
             printAvailableClassRooms(fp);
         }
@@ -250,7 +250,7 @@ int initializeSocket(){
 int main() {
     
   classRoomList = (ClassRoom *) malloc( maximumAvailableClassRoom * sizeof( ClassRoom ) );
-  lockList = (ClassRoom *) malloc( maximumAvailableClassRoom * sizeof( ClassRoom ) );
+  reserveList = (ClassRoom *) malloc( maximumAvailableClassRoom * sizeof( ClassRoom ) );
   initializeClassRooms();
   //printAvailableClasses();
   int servSock = initializeSocket();

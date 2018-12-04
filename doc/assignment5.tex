@@ -22,133 +22,34 @@
 
 \vspace{0.1in}
 
-This assignment includes two programming problems, one in C
-and one in Java.  As always, be sure your code compiles and
-runs on the EOS Linux machines before you submit.  Also, remember that
-your work needs to be done individually and that your programs need to
-be commented and consistently indented.  You \textbf{must} document
-your sources and, if you use sources, you must still write at least
-half your code yourself from scratch.
+ This assignment includes a programming problem in C.  As always, be sure your code compiles and runs on the EOS Linux machines before you submit.  Also, remember that your work needs to be done individually and that your programs need to be commented and consistently indented.  You \textbf{must} document your sources and, if you use sources, you must still write at least half your code yourself from scratch.
 
 \begin{enumerate}
-\item (16 pts) Using your textbook, please give a short definition of
-  the following terms, in your own words.  Write up all your answers
-  into a plain text file called \texttt{terms.txt} and submit it using
-  WolfWare classic when you're done.
 
-\begin{enumerate}
-\item computation migration
+\item(40 pts) Teachers of North Carolina State University are having a busy schedule in this Thanksgiving month and their schedules are frequently overlapping. That's why In this assignment we are going to implement a multi threaded server/client Class Room booking system in C that uses TCP/IP socket mechanism for communicating. To handle synchronization you have to integrate appropriate code (i.e POSIX monitor).
 
-%
+For this program it is sufficient to write a server program that will be handling requests \textbf{classRoomScheduler.c}. No need for implementing client side program (Teachers), we are going to use a general purpose program for network communication , \texttt{nc}. Note that in this assignment we are referring Teacher as the client.
 
-\item dynamic routing
+Once you get your server program running it will keep on handling incoming requests from the Teachers (Clients). For connecting to the server the Teacher will need the hostname (which is localhost in our case) and a port number (54321 an arbitrary value defined in the static section of the code provided in the starter code, but students will be assigned separate port number which is mentioned later in this document ).
 
-% 
+Our solution is pretty straight forward. There will be a number of classrooms initialized in the beginning (say 5) with some specific names (i.e ROOM1201). A Teacher can book a class room if it is available. When he is done he can leave the room making it available for another Teacher. If a class room is taken by a Teacher and another Teacher wants it, he has to wait unfortunately until the room is vacant again.
 
-\item limited copy (for access rights)
-
-% 
-
-\item breach of availability
-
-% 
-
-\end{enumerate}
-
-\item (5 pts) Arc account activation.
-
-  On our next homework assignment, you'll need to use a
-  high-performance computing cluster called arc.  Before you can do
-  this, you'll need to follow steps to activate your account on arc
-  and set up a key pair so you can log in.  If you don't complete arc
-  activation on this assignment, there's a problem you won't be able
-  to do on the next assignment.  To help make sure everyone
-  is ready, I have a low-point-value problem on this assignment,
-  requiring you to activate your account on arc and log in on the head
-  node of the arc cluster.
-
-  About a week before this assignment is due, you should receive an
-  email from the system administrator on arc.  It will contain a link
-  to more information about the arc cluster (most of which won't apply
-  to you) and a link to enter a public key to activate your account.
-  First, you'll need to generate an RSA key pair.
-
-  If you've never generated a ssh keypair before, it's easy (if you've
-  done it before, keeping multiple keys around takes a little more
-  work, but you probably know what you're doing if you've done this
-  before).  To generate your key pair, log in on one of the EOS linux systems,
-  and enter the command:
-
-\begin{verbatim}
-ssh-keygen -t rsa -b 4096
-\end{verbatim}
-
-  This command will create a 4096-bit RSA key pair, and store it in a
-  couple of files in the .ssh directory under your home directory.
-
-  Have a look at the public key of this pair:
-
-\begin{verbatim}
-cat .ssh/id_rsa.pub
-\end{verbatim}
-
-  Click the link in your email for activating your account.  Your web
-  browser will probably complain that it's seeing a self-signed
-  certificate; that's OK.  Once you get to the destination page, paste
-  the contents of your \verb+.ssh/id_rsa.pub+ file into the text
-  box (the entire output of the cat command above).  Press the button
-  at the bottom of the form and your account should be activated.
-
-  Then, from one of the university Linux machines, you should be able
-  to ssh into the head node on the arc system:
-
-\begin{verbatim}
-  ssh arc.csc.ncsu.edu
-\end{verbatim}
-
-  If this works, you'll get a shell prompt on the arc system (you need
-  to see this shell prompt on arc to get credit for this problem).  If
-  this works, you should be in good shape for the next assignment.
-  You can log out of the arc system by entering \texttt{exit}.
-  
-\item (40 pts) We're going to implement a multi-threaded Unix
-  client/server program in C using TCP/IP sockets for communication.
-  The program will let clients lock and unlock various items.  If a
-  client tries to lock an item that's already locked, the server will
-  make that client wait until the requested item is unlocked.  I'm
-  providing you a skeleton of the server to help get you started,
-  \texttt{lockServer.c}.  You'll complete the implementation of this
-  server, adding support for multi-threading and synchronization, and
-  building some
-  representation for the set of items that are currently locked.  You
-  won't need to write a client; for
-  that, we're going to use a general-purpose program for network
-  communication, \texttt{nc}.
-
-  Once started, your server will run perpetually, accepting
-  connections from clients until the user kills it with ctrl-C.  The
-  program we're using as a client, \texttt{nc}, will take the server's
-  hostname and port number as command-line arguments.  After
-  connecting to the server, nc will just echo to the screen any text
-  sent by the server and send any text the user types to the server.
-
-  While a client is connected, the server will repeatedly prompt for a
-  command using the prompt ``\verb$cmd> $''.  In the starter code, the server just
-  echoes each command back to the client, but you're going to modify
-  it to support the following commands:
+  While a Teacher is connected to the system, the server will repeatedly prompt for a
+  command using the prompt ``\verb$> $''.  We are simply echoing whatever the Teacher types in the skeleton code. However in the final version of it you need to implement some specific commands that corresponds to the following actions:
 
 \begin{itemize}
-\item \texttt{lock} \textit{name}\\
-  Wait until it's possible to lock the item with the given name (i.e.,
-  until it's not locked), then add this item to the set of locked items.
+\item \texttt{book} \textit{Class Room}\\
+  Wait until it's possible to book a room with the given name, if it is booked, remove it from the listed available rooms. After booking a room a proper message feedback should be given to the Teacher (i.e Class Room Booked!). If an invalid room name is given proper feedback should be also given(i.e Class Room does not exist).
   
-\item \texttt{unlock} \textit{name}\\
-  Unlock the item with the given name (i.e., remove it from the set of
-  locked items).  If any other client was waiting to lock this item,
-  this should wake up one of them up so they can lock it.
+\item \texttt{free} \textit{Class Room}\\
+  Takes a Class Room Name as argument and vacates the class room with the given name (i.e., add it to the set of
+  available room).  If any other Teacher was waiting to book this class room, this should wake up one of them up so they can book it. If invalid room name is given proper feedback should be given to the Teacher.
 
-\item \texttt{list}\\
-  List all the items in the set of locked items (in any order).
+\item \texttt{available}\\
+  Lists out the available rooms.
+  
+\item \texttt{reserved}\\
+  Lists out the class rooms that are already reserved.
 
 \item \texttt{quit}\\
   This is a request for the server to terminate the connection with this
@@ -184,22 +85,21 @@ cat .ssh/id_rsa.pub
 
   With each client having its own thread on the server, there could be
   race conditions when threads try to access any state stored in the
-  server (e.g., the set of items that are currently locked).  You'll
+  server (e.g., the set of class rooms that are currently booked).  You'll
   need to add synchronization support to your server to prevent
   potential race conditions.  You can use POSIX semaphores or POSIX
   monitors for this (I suggest monitors).  That way, if two clients
   enter a command at the same time, the server will make sure their
   threads can't access shared server state at the same time.
 
-  The commands described above require that the server makes a client
-  wait if they try to lock an item that's already locked.  So,
-  in your implementation of the lock command, you'll check to see if
-  the requested item is currently in the set of locked items.  If it
-  is, the server will force the thread associated with that client wait
-  until the given item is unlocked by some other thread (maybe not the
-  same one that locked it).  Whenever an item is unlocked, you server
-  will remove it from the set of locked items and wake a thread that
-  was waiting to lock that item (if such a thread exists).
+  The commands described above require that the server makes a Teacher
+  wait if they try to book a class room that's already occupied.  So,
+  in your implementation of the book command, you'll check to see if
+  the requested class room is currently in the set of reserved rooms.  If it
+  is, the server will force the thread associated with that Teacher wait
+  until the given class room is vacated by that teacher (who booked it).  Whenever an room is vacated, you server
+  will remove it from the set of reserved rooms and wake a thread that
+  was waiting to book that room (if such a thread exists).
 
 \subsubsection*{Detaching Threads}
 
@@ -214,27 +114,6 @@ cat .ssh/id_rsa.pub
   than keeping it around for the benefit of another thread that's
   expected to join with it.
 
-\subsubsection*{Buffer Overflow and Set Capacity}
-
-  In its current state, the server is vulnerable to buffer overflow
-  where it reads commands from the client.  You'll need to fix this
-  vulnerability in the existing code and make sure you don't have
-  potential buffer overflows in any new code you add.  Your server
-  only needs to be able to handle the commands listed above.  For
-  inputs that are too long, you can do whatever you want, print an
-  error message, ignore the command, terminate the client connection,
-  whatever.  No matter what a client sends it, it shouldn't permit a
-  buffer overflow, since that could let an attacker get unintended
-  behavior out of the server.
-
-  An item name will consist of at most 24 characters, with no
-  whitespace in the name.  There's no bound on the set of locked
-  items; it could contain any number of different item names, and you
-  don't know what any of these item names are going to be, \textit{a
-    priori}.  You can store the set of locked items as a linked list
-  or a resizable array, so there's no limit to the number of items
-  that can be locked.
-
 \subsubsection*{Port Numbers}
 
   Since we may be developing on multi-user systems, we need to make
@@ -245,302 +124,84 @@ cat .ssh/id_rsa.pub
   out what port number your server is supposed to use.
 
 \url{people.engr.ncsu.edu/dbsturgi/class/info/246/}
-  
-\subsubsection*{Sad Truths about Sockets on EOS Linux Hosts}
-
-  Since we're using TCP/IP for communication, we can finally run our
-  client and server programs on different hosts.  You should be able
-  to run your server on one host and then start nc on any other
-  internet-connected system in the world, giving it the server's
-  hostname and your port number on the command line.  However, if you
-  try this on a typical university Linux machine, you'll probably be
-  disappointed.  These systems have a software firewall that blocks
-  most IP traffic.  As a result, if you want to develop on a
-  university system, you will still need to run the client and server
-  on the same host.  If you have your own Linux machine, you should be
-  able to run your server on it and connect from anywhere (depending
-  on how your network is set up).
-
-  If you'd like to use a machine in the Virtual Computing Lab (VCL),
-  you should be able to run commands as the administrator, so you can
-  disable the software firewall.  I had success with a reservation for a
-  CentOS 7 Base (64 bit VM) system.  After logging in, uploading and building my
-  server, I ran the following command to permit TCP connections via my
-  port.  Then, if I ran a server on the virtual machine, I was
-  able to connect to it, even from off campus.
-
-\begin{tabbing}
-sudo /sbin/iptables -I INPUT 1 -p tcp \verb+--+dport \textit{my-port-number} -j ACCEPT
-\end{tabbing}
-
-  Also, if your server crashes, you may temporarily be unable
-  to bind to your assigned port number, with an error message ``Can't
-  bind socket.''  Just wait a minute or two and you should be able to
-  run the server again.
-
-\subsubsection*{Implementation}
-
-  You will complete your server by extending the file,
-  \texttt{lockServer.c} from the starter.  You'll need to compile as
-  follows:
-
-\begin{verbatim}
-gcc -Wall -g -std=gnu99 -o lockServer lockServer.c -lpthread
-\end{verbatim}
-
-\subsubsection*{Sample Execution}
+ 
+ \subsubsection*{Sample Execution}
 
   You should be able to run your server with any number of concurrent
   clients, each handled by its own thread in the server.  Below, we're
   looking at three terminal sessions, with the server running in the
   left-hand column and clients running in the other two columns (be
-  sure to use our own port number, instead of 28123).  I've
+  sure to use our own port number, instead of 54321).  I've
   interleaved the input/output to illustrate the order of interaction
   with each client, and I've added some comments to explain what's
   going on.  If you try this out on your own server, don't enter the
   comments, since the server doesn't know what to do with them.
 
 \begin{verbatim}
-$ ./lockServer
+$ ./classRoomScheduler
 
-                  # Run one client and lock a
-                  # couple of items.
+                  # Run one client and book a
+                  # couple of rooms.
                   $ nc localhost 28123
-                  cmd> lock apple
-                  cmd> lock banana
+                  > book ROOM1201
+                  >Class room booked!
+                  > book ROOM1202
+                  >Class room booked!
 
                                                  # Run another client
                                                  $ nc localhost 28123
-                                                 # See what items are locked
-                                                 cmd> list
-                                                 apple
-                                                 banana
+                                                 # See what items are available
+                                                 > available
+                                                 ROOM1203
+                                                 ROOM1204
+                                                 ROOM1205
 
-                                                 # Lock another item.
-                                                 cmd> lock cherry
+                                                 # book another room.
+                                                 > book ROOM1203
+                                                 >Class room booked!
 
-                                                 # Client will block if it tries
-                                                 # to lock a resource that's
-                                                 # already locked.
-                                                 cmd> lock banana
+                                                 # Client will wait if it tries
+                                                 # to book a room that's
+                                                 # already reserved.
+                                                 > book ROOM1201
+                                                 (Thread waiting)
 
-                  # Now, three items are locked
-                  cmd> list        
-                  apple
-                  banana
-                  cherry
+                  # Now, three rooms are booked
+                  > reserved        
+                  ROOM1201
+                  ROOM1202
+                  ROOM1203
 
-                  # Unlocking this resource
+                  # Vacating this room
                   # Will let the other client
                   # continue
-                  cmd> unlock banana
+                  > free ROOM1201
 
-                                                 cmd> lock durian
 
-                  # The server doesn't keep up with
-                  # who locked each resource.  You can
-                  # unlock resources you locked, or
-                  # resources locked by another client.
-                  cmd> unlock apple
-                  cmd> unlock cherry
+                                                 >Class room booked!
+                                                 > book ROOM1204
+                                                 >Class room booked!
+
 
                   # This will block this client.
-                  cmd> lock durian
+                  > book ROOM1204
+                  (Thread waiting)
 
-                                                 # Until we unlock 
-                                                 cmd> unlock durian
-                                                 cmd> unlock banana
-                  cmd> quit
+                                                 # Until we vacate this room
+                                                 > free ROOM1204
+                
+                  >Class room booked!                                 
+                  > quit
 
-                                                 # Exit (leaving one resource
-                                                 # still locked).
-                                                 cmd> quit
+                                 
+                                                 > quit
 \end{verbatim}
 
 \subsubsection*{Submitting your Work}
 
-When you're done, submit your \texttt{lockServer.c} source file using Wolfware Classic.
+When you're done, submit your \texttt{classRoomScheduler.c} source file using Wolfware Classic.
+ 
 
-\item (40 pts) For this problem, we're going to write a distributed
-  program that works with permissions information represented using a
-  global table (an inefficient representation that you'd never really
-  use, in practice).  This will give
-  us a chance to try out UDP and to think about a simple model for how
-  permissions could be stored.
-
-\subsection*{Global Table Representation}
-
-  At startup, the server will read a list of users from an input file
-  called ``users.txt''.  This file contains one username per line, where
-  the username is a sequence of non-whitespace characters.
-
-  The server will read a list of objects from a file called
-  ``objects.txt''.  This file also gives one object per line, where an
-  object name is a sequence of non-whitespace characters.
-
-  For the access rights, the server will read a list of triples from a
-  file called ``table.txt''.  Each line of this file gives the number
-  of a user from the user list (counting from zero), followed by the
-  number of an object from the object list (counting from zero).  This
-  is followed by a string that says an operation the given user is
-  permitted to perform on the given object.  The name of an operation
-  is a sequence of non-whitespace characters.  For example, the last
-  line of the example ``table.txt'' is the following.  It says that
-  Marge (user number 5) can delete the motorcycle (object number 8).
-
-\begin{verbatim}
-5 8 delete
-\end{verbatim}
-
-  You can assume the input files are all in the correct format.  We
-  may test you program on different input files, but we won't test
-  your solution on invalid files.  In the ``table.txt'' file, the same
-  user/object pair may occur more than once, if a user can perform
-  multiple operations on an object.
-
-\subsection*{Partial Implementation}
-
-  I'm giving you a mostly complete client, but you get to write the
-  server yourself.  You can use our in-class example, UDPClient.java
-  and UDPServer.java, to remind yourself of some of the details of how
-  to communicate over UDP.  You'll find the partial implementation on
-  the course homepage, PermissionsClient.java.
-
-\subsection*{Query Commands}
-
-  On the command line, the client expects a hostname where the server
-  is running, the name of a user, the name of an object, and a desired
-  operation.  It puts the last three parameters into a message, sends
-  it to the server and waits for a response.  If the given user is
-  permitted to perform the given operation on the given object, the
-  server should respond and the client should print ``Access
-  granted''.  If not, it should print ``Access denied''.  If the
-  client provides a user name or an object name that aren't on the
-  list, the server will just print ``Access denied''.  If the server
-  doesn't respond within 2 seconds, the client should print ``No
-  response''.
-
-  Each time it's run, the client will encode a request in a UDP
-  datagram and send it to the server's port on the given host.  The
-  client will then wait for a response datagram, report the server's
-  response to the user and then terminate.  If the user wants to run
-  more commands, they can just run the client again.
-
-\subsection*{Server Operation}
-
-  After parsing the three input lists, the server will open a
-  DatagramSocket and repeatedly process requests it receives from
-  clients, sending back responses for correctly formed requests.  Your
-  server won't need to be multi-threaded.
-
-  You will have to kill the server manually (e.g., with ctrl-C) to get
-  it to terminate.
-
-\subsection*{Message Representation}
-
-  The client concatenates the last three command-line arguments (space
-  separated) into a string, converts the string to a byte array and
-  sends it in a datagram.  It expects the server's response in the
-  same format, a string encoded as a byte array.  You can use this
-  format for messages if you want, or if you'd like to encode messages
-  differently that's OK.  You'll just need to change the client to
-  have it use your preferred message format.
-
-\subsection*{Handling Bad Requests}
-
-  If a malicious client tries to send the server a poorly-formed
-  request, the server should print a message to standard output and
-  just ignore the message (without even sending a response).  The
-  Java exception mechanism gives us a good way to handle this.  If anything
-  goes wrong while processing a request, it will throw an
-  exception.  The server can catch this exception, print an error
-  message of your choice and then go on immediately to wait for a
-  datagram from the next client.
-
-\subsection*{Lost Messages}
-
-  UDP doesn't guarantee delivery of messages.  Either the
-  client's request or the server's response may be lost.  Your client
-  will deal with this by waiting at most 2 seconds for a response from
-  the server.  If it doesn't get a response, it will just terminate
-  and print ``No response''  The DatagramSocket class has a method,
-  setSoTimeout(), that lets you specify how long you'd like to wait to
-  receive a message.  You'll need to read about this method, figure
-  out how to use it and add it to your client.
-
-  You can test this behavior by killing your server, then running the
-  client.  After waiting for two seconds, the client should give up
-  and print``No response''.
-
-\subsubsection*{Port Numbers}
-
-  As in the C client/server program, you'll need to use your assigned
-  port numbers for this program.  Here, the client and server will
-  each need to use a different port
-  numbers (so we have the option of running them on the same host).
-  Just use your first assigned port number for your server and use the
-  second one as your client's port number.  You can check the
-  following URL to see what port numbers you've been assigned.
-
-\url{people.engr.ncsu.edu/dbsturgi/class/info/246/}
-
-\subsubsection*{Sad Truths about Sockets Remain}
-
-  As with the C client/server, the software firewall on the EOS
-  machines will prevent us from running our client and server on
-  different hosts.  In developing your programs, you can just run
-  client and server on the same host, giving ``localhost'' as the
-  server's hostname.  If you have your own Linux system, you can try
-  out your client/server on different hosts, or you can use a VCL
-  machine and enable UDP traffic for the ports you're using.
-
-  \subsection*{Sample Execution}
-
-  Once your programs are working, you should be able to run them as
-  follows, using the three data files provided with this assignment.
-  Below, I've shown these commands as you would run them in two
-  terminal windows on the same host, with the server execution on the
-  left and several executions of the client on the right.  I've included
-  some shell comments to say what's going on.
-
-\begin{verbatim}
-# start the server
-$ java PermissionsServer
-
-                   # The first access right in the table.
-                   $ java PermissionsClient localhost Jerry inkwell append
-                   Access granted
-
-                   # The last one right in the table.
-                   $ java PermissionsClient localhost Marge motorcycle delete
-                   Access granted
-
-                   # A user and object that aren't even on the lists.
-                   $ java PermissionsClient localhost Susan truck park
-                   Access denied
-
-                   # A user and an object that are on our lists, but a right that's
-                   # not grated in the table.
-                   $ java PermissionsClient localhost Evie dumpster read
-                   Access denied
-
-                   # same user and object, but this time a right that's granted.
-                   $ java PermissionsClient localhost Evie dumpster truncate
-                   Access granted
-
-# Kill the server
-^C
-
-                   # After a delay, the client gives up.
-                   $ java PermissionsClient localhost Bill apple eat
-                   No response
-\end{verbatim}
-
-\subsection*{Submitting your Work}
-
-When you're done, submit an electronic copy of your
-\texttt{PermissionsClient.java} and \texttt{PermissionsServer.java}
-code using WolfWare classic.
 
 \end{enumerate}
 

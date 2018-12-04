@@ -1,0 +1,140 @@
+OS Assignment 5 Grading Guide
+
+---------
+Grading guide
+---------
+
+  You'll be grading this program based on how well it works under testing.
+
+  Build their server with:
+
+gcc -Wall -g -std=gnu99 -o classRoomScheduler classRoomScheduler.c -lpthread
+
+  Check the compiler output to see if there are any suspicious-looking
+  compiler warnings.  Some warnings are OK, but this might suggest
+  something to take a closer look at.
+
+  I'm giving you a file, portMap.txt, containing unity IDs and
+  port numbers sorted in the same order as the grading spreadsheet.
+  You should be able to use this file in a loop like the following, to
+  iterate over all the student names and their corresponding port
+  numbers:
+
+    cat portMap.txt | while read id port
+    do
+      ... process unity $id and port $port ...
+    done
+
+  First, try commands with just one client.  The two columns here are
+  to show two different terminal windows.  Since we're connecting to a
+  server running on localhost, you'll need to logins on the same host.
+  Each command or group of commands shows what to deduct if they don't
+  run that command successfully
+
+  You'll need to replace the port number I'm using with the
+  student-assigned port number.  If you can't connect with nc, take a
+  quick look at their source code and see if maybe they didn't use the
+  right port number.  Charge them -3 pts for this, but switch to
+  whatever port number they used so you can test their solution.
+
+  I put comments in the commands below, to explain what the test is
+  doing and what deduction you should give.  Don't type in (or
+  copy-and-paste) these comments, since the server isn't expected to
+  understand them.  If a student's submission fails on some tests,
+  you'll need to write them a short summary telling them where their
+  solution went wrong.  Be sure to use full sentences; don't just list
+  the cases they had trouble with (i.e., make sure they understand
+  what you're telling them).
+
+  If you get a "Can't bind socket" message, you'll need to wait about
+  a minute before you can resume testing that student's server.  If
+  you want to stay busy, you could go grade another student's work at
+  this point.
+
+
+# Start the server
+./classRoomScheduler
+
+          # Run just one client.
+          $ nc localhost 54321
+
+          # book a room (-3 pts)
+          > lock ROOM1201
+
+
+          # Make sure ROOM1201 is booked (-3 pts)
+          > reserved
+          ROOM1201
+
+          # Book another room and make sure
+          # both are listed, in either order.
+          # (-3 pts)
+          > book ROOM1202
+          > reserved
+          ROOM1201
+          ROOM1201
+
+          # free a room and make sure it's gone
+          # from the reserved list (-3 pts)
+          > free ROOM1201
+          > reserved
+          ROOM1202
+
+          # Make sure you can quit the client (-1 pt)
+          > quit
+
+# kill this server with ctrl-C
+# this will reset the lists when the server
+# is restarted.
+^C
+
+  Next, let's run with multiple clients.  Each column of commands
+  needs to be run in a different terminal on the same host.
+
+
+# Re-start the server.
+./classRoomScheduler
+
+          # Run a client and book a couple of rooms.
+          # (-1 pt)
+          $ nc localhost 54321
+          > book ROOM1201
+          > book ROOM1202
+
+                                   # Make sure the server can interact
+                                   # with multiple clients at once
+                                   # (-4 pts)
+                                   $ nc localhost 54321
+                                   > book ROOM1203
+                                   > reserved
+                                   ROOM1201
+                                   ROOM1202
+                                   ROOM1202
+
+				   # Make sure they are also printing
+				   # Available list correctly
+				   #(-3 pts)
+				   >available	
+				   ROOM1204
+				   ROOM1205
+	
+                                   # This should make the client
+                                   # block. (-3 pts)
+                                   > book ROOM1202
+
+          # The first command should not
+          # unblock the other client, but
+          # the second one should (-4 pts)
+          > free ROOM1201
+          > free ROOM1202
+
+          # ROOM1202 and ROOM1203 should still be reserved (-3 pts)
+          > reserved
+          ROOM1202
+          ROOM1203
+
+# Killing the server should also stop
+# the two clients.
+^C
+
+
